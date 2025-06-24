@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Detector de Bombas - Mines</title>
+<style>
+  body { font-family: Arial; text-align: center; background: #222; color: #eee; }
+  h1 { color: #00ff99; }
+  .grid { display: grid; grid-template-columns: repeat(8, 50px); justify-content: center; margin: 20px auto; gap: 3px; }
+  .cell { width: 50px; height: 50px; background: #333; border: 1px solid #555; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .cell.open { background: #0f0; color: #000; }
+  .cell.safe { background: #00ff99; }
+  .cell.risk { background: yellow; color: #000; }
+  .cell.bomb { background: red; }
+  button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<h1>Detector de Bombas - Mines</h1>
+
+<label for="bombs">Nº de Bombas (3 a 10): </label>
+<input type="number" id="bombs" min="3" max="10" value="3">
+<br><br>
+
+<button onclick="resetGrid()">Resetar Grade</button>
+<button onclick="calcular()">Calcular Probabilidades</button>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const gridSize = 8;
+let opened = [];
+
+function createGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  opened = [];
+  for (let i = 0; i < gridSize * gridSize; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.dataset.index = i;
+    cell.addEventListener('click', () => toggleCell(cell));
+    grid.appendChild(cell);
+  }
+}
+
+function toggleCell(cell) {
+  const idx = parseInt(cell.dataset.index);
+  if (opened.includes(idx)) {
+    opened = opened.filter(i => i !== idx);
+    cell.classList.remove('open');
+  } else {
+    opened.push(idx);
+    cell.classList.add('open');
+  }
+}
+
+function resetGrid() {
+  createGrid();
+}
+
+function calcular() {
+  const bombs = parseInt(document.getElementById('bombs').value);
+  const totalCells = gridSize * gridSize;
+  const restantes = totalCells - opened.length;
+
+  if (restantes <= 0) {
+    alert('Todas as casas estão abertas!');
+    return;
+  }
+
+  const prob = bombs / restantes;
+
+  document.querySelectorAll('.cell').forEach(cell => {
+    const idx = parseInt(cell.dataset.index);
+    if (opened.includes(idx)) return;
+    cell.classList.remove('safe', 'risk', 'bomb');
+
+    if (prob <= 0.15) {
+      cell.classList.add('safe');
+      cell.innerText = (prob * 100).toFixed(1) + '%';
+    } else if (prob <= 0.35) {
+      cell.classList.add('risk');
+      cell.innerText = (prob * 100).toFixed(1) + '%';
+    } else {
+      cell.classList.add('bomb');
+      cell.innerText = (prob * 100).toFixed(1) + '%';
+    }
+  });
+}
+
+createGrid();
+</script>
+
+</body>
+</html>
